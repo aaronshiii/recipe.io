@@ -5,6 +5,7 @@ $(document).ready(function () {
       showRecipe(recipes[i]);
     }
   });
+
 });
 
 // Grab the main card view of the recipe image and name, and insert it onto the screen
@@ -12,7 +13,7 @@ function showRecipe (recipe) {
   var recipeCard =
     '<div class="card m-3" data-toggle="modal" data-target="#recipe-modal-' + recipe.id + '" style="width: 22rem; height: 25rem;">' +
       '<img src="' + recipe.imageURL + '" class="card-img-top" style="max-width: 22rem; max-height: 22rem;>' +
-      '<div class="card-body">' +
+      '<div class="card-body">' + 
         '<div class="row justify-content-center my-3">' +
           '<h5 class="card-title">' + recipe.name + '</h5>' +
         '</div>' +
@@ -36,9 +37,12 @@ function showRecipe (recipe) {
           '<ul id="modal-ingredients-' + recipe.id + '"></ul>' +
           '<p>Steps</p>' +
           '<ol id="modal-steps-' + recipe.id + '"></ol>' +
+          '<p>Calories </p>' +
+          '<ul id="modal-calories-' + recipe.id + '"></ul>' +
         '</div>' +
         '<div class="modal-footer">' +
-          '<button class="btn btn-primary">Save</button>' +
+          '<p style="display: none;">Recipe Added!</p>' +
+          '<button class="btn btn-primary save-recipe-button">Save</button>' +
           '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>' +
         '</div>' +
         '</div>' +
@@ -55,11 +59,25 @@ function showRecipe (recipe) {
   for (i in steps) {
     $('#modal-steps-' + recipe.id).append('<li>' + steps[i] + '<br></li>');
   }
+  var calories = recipe.calories;
+    $('#modal-calories-' + recipe.id).append('<li>' + calories + '<br></li>');
 }
 
-// Search button click funcitonality
-$('#search-button').click(function (event) {
-  event.preventDefault();
+// // Search button click funcitonality
+// $('#search-button').click(function (event) {
+//   event.preventDefault();
+//   $('.card').each(function () {
+//     if (!$(this).text().toUpperCase().includes($('#recipe-search-input').val().toUpperCase())) {
+//       $(this).css('visibility', 'hidden');
+//     } else {
+//       $(this).css('visibility', 'visible');
+//     }
+//   });
+// });
+
+//Live filtering of grid on seach bar inputs
+$('#recipe-search-input').on('input', function () {
+  // for each recipe card, if the string in the search bar is a substring of the name, keep visible, otherwise make it invisible
   $('.card').each(function () {
     if (!$(this).text().toUpperCase().includes($('#recipe-search-input').val().toUpperCase())) {
       $(this).css('visibility', 'hidden');
@@ -69,14 +87,27 @@ $('#search-button').click(function (event) {
   });
 });
 
-// Live filtering of grid on seach bar inputs
-// $('#recipe-search-input').on('input', function () {
-//   // for each recipe card, if the string in the search bar is a substring of the name, keep visible, otherwise make it invisible
-//   $('.card').each(function () {
-//     if (!$(this).text().toUpperCase().includes($('#recipe-search-input').val().toUpperCase())) {
-//       $(this).css('visibility', 'hidden');
-//     } else {
-//       $(this).css('visibility', 'visible');
-//     }
-//   });
-// });
+// save recipe when clicking recipe modal's save button
+$(document).on('click', '.save-recipe-button', function(event) {
+  var recipe_id = $(this).closest('.modal').attr('id').split('-')[2];
+  save_recipe(recipe_id);
+  // flash message next to save button
+  $(this).prev().fadeIn();
+  $(this).prev().fadeOut();
+});
+
+// save recipe to local storage
+function save_recipe(recipe_id) {
+  if(localStorage.getItem('my_recipe_list')) {
+    var recipe_list = JSON.parse(localStorage.getItem('my_recipe_list'));
+  } else {
+    var recipe_list = {};
+  }
+  if (!recipe_list[recipe_id]) {
+    recipe_list[recipe_id] = 1;
+  } else {
+    recipe_list[recipe_id]++;
+  }
+  console.log(recipe_list)
+  localStorage.setItem('my_recipe_list', JSON.stringify(recipe_list));
+}
